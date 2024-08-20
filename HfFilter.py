@@ -9,9 +9,9 @@ class HfFilter(Node.Node):
     #self.sig = 10/np.sqrt(np.pi)
     self.sigma = sigma 
 
-  def forward(self, x):
+  def forward(self, x, dim):
     ##Assumes evenness oh well
-    dim = 1
+    #dim = 1
     #print(x)
     #print(x.shape)
     the_filter = torch.zeros(x.shape[dim])
