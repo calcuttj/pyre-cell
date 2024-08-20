@@ -4,8 +4,8 @@ import torch
 class ElecResponse(Node.Node):
   def __init__(self, gain, shaping):
     super().__init__()
-    self.gain = gain
-    self.shaping = shaping
+    self.gain = gain #mV/fC usually
+    self.shaping = shaping #us usually
 
   def response(self, time):
     ## Fix this
@@ -23,6 +23,7 @@ class ElecResponse(Node.Node):
     #fixme: this scaling is slightly dependent on shaping time.  See response.py
     gain *= 10 * 1.012
 
+    ## Figure out what these units are
     from torch import exp, cos, sin
     return (4.31054 * exp(-2.94809 * reltime) * gain - 2.6202 * exp(-2.82833 * reltime) * cos(1.19361 * reltime) * gain -
             2.6202 * exp(-2.82833 * reltime) * cos(1.19361 * reltime) * cos(2.38722 * reltime) * gain +

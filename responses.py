@@ -1,4 +1,5 @@
 import torch, json
+import units
 
 class PathResponse:
   def __init__(self, current, pitchpos, wirepos):
@@ -56,41 +57,52 @@ def load_field(field):
 	field['axis'],
 	field['origin'],
 	field['tstart'],
-	field['period'],
+	units.ns*field['period'],
 	field['speed'])
 
 from collections import defaultdict
 import numpy as np
 
+#This can be optimized
 def wire_region_average(fr):
     newplanes = []
     
+    #Loop over planes
     for plane in fr.planes:
         newpaths = []
         pitch = plane.pitch
 
+        #Default values
         avgs = defaultdict(lambda: torch.Tensor(np.zeros(len(plane.paths[0].current))))
         fresp_map = {}
         pitch_pos_range_map = {}
 
         nsamples = 0
 
+        #Loop over the paths for this plane  
         for path in plane.paths:
+
+          #Get the index for this sub-pitch path
           eff_num = int(path.pitchpos / (0.01 * pitch))
 
+          #+- the sub-pitch
           for en in [eff_num, -eff_num]:
+
             if en not in fresp_map:
+                #If this is not in the map, make a new entry 
                 fresp_map[en] = path.current
             else:
+                ##If in the map, average it out
                 fresp_map[en] += path.current
                 fresp_map[en] *= .5
 
         pitch_pos = list(fresp_map.keys())
         pitch_pos.sort() ##Do this?
 
+        #loop over positions within the wire pitch, and set the lower/upper
+        #bounds for that position
         min_val = -1e9
         max_val = 1e9
-
         for i, pos in enumerate(pitch_pos):
             if i == 0:
                 pitch_pos_range_map[pos] = (

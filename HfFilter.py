@@ -12,16 +12,16 @@ class HfFilter(Node.Node):
   def forward(self, x):
     ##Assumes evenness oh well
     dim = 1
-    print(x)
-    print(x.shape)
+    #print(x)
+    #print(x.shape)
     the_filter = torch.zeros(x.shape[dim])
-    print(the_filter.shape)
+    #print(the_filter.shape)
 
     freqs = np.linspace(0., self.max_freq, (x.shape[dim]-1))
-    print(freqs)
+    #print(freqs)
     the_filter[1:] = torch.tensor(freqs)
-    print(the_filter)
+    #print(the_filter)
     the_filter = torch.exp(-.5*(the_filter/self.sigma)**2)
-    print(the_filter)
+    #print(the_filter)
     the_filter[0] = 0.
     return x * the_filter
