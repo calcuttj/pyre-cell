@@ -40,13 +40,27 @@ digraph Overall {
         FFT_time
         ElecResp [shape=rectangle]
         ChanResp [shape=rectangle]
+        Redigitize
+        Combine
         ElecResp -> ElecRespFFT_time 
         ChanResp -> ChanRespFFT_time
         FFT_wire
-        FFT_FR_wire_domain
-        FFT_FR_time_domain
+        //FFT_FR_wire_domain
+        FFT_FR_time_domain [label="FFT_time"]
+        ElecRespFFT_time -> Combine
+        FFT_FR_time_domain -> Combine
+
+        invFFT_time
+        Combine -> invFFT_time
+        invFFT_time -> Redigitize
+
+        FFT_time2 [label="FFT_time"]
+        FFT_wire2 [label="FFT_wire"]
+        Redigitize -> FFT_time2
+        FFT_time2 -> FFT_wire2
+
         ApplyFieldResp
-        ApplyHfFilter
+        ApplyHfFilter [label="Gaus wire filter"]
         Inv_FFT_wire
         Inv_FFT_time
         ShiftWire
@@ -137,14 +151,15 @@ digraph Overall {
   Add -> RebaseWFs
 
   RebaseWFs -> FFT_time
-  ElecRespFFT_time -> ApplyResp
+  //ElecRespFFT_time -> ApplyResp
   ChanRespFFT_time -> ApplyResp
   FFT_time -> ApplyResp
   ApplyResp -> FFT_wire [ltail=clusterChanLoop]
   FieldResp -> FFT_FR_time_domain
-  FFT_FR_time_domain -> FFT_FR_wire_domain
-  FFT_FR_wire_domain -> ApplyFieldResp
+  //FFT_FR_time_domain -> FFT_FR_wire_domain
+  //FFT_FR_wire_domain -> ApplyFieldResp
   FFT_wire -> ApplyFieldResp
+  FFT_wire2 -> ApplyFieldResp
   ApplyFieldResp -> ApplyHfFilter
   ApplyHfFilter -> Inv_FFT_wire
   Inv_FFT_wire -> Inv_FFT_time
