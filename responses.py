@@ -152,6 +152,49 @@ def wire_region_average(fr):
 
     return FieldResponse(newplanes, fr.axis, fr.origin, fr.tstart, fr.period, fr.speed)
 
+def wire_region_average_plane(fr, navg=10, plane=0):
+  sorted_paths = sorted(fr.planes[plane].paths, key=lambda x : x.pitchpos)
+  plane = fr.planes[plane]
+  paths = plane.paths
+  npaths = len(paths)
+  npos = int(navg/2 + 1)
+  nwires = int(npaths / npos)
+  print(nwires)
+
+  start = 0
+  wire_num = -navg
+  shape = sorted_paths[0].current.shape
+   
+  currents = dict() 
+  for i in range(nwires):
+    print(i, wire_num, plane.pitch*wire_num)
+    currents[wire_num] = torch.zeros(shape)
+    if -wire_num not in currents:
+      currents[-wire_num] = torch.zeros(shape)
+
+    currents[wire_num] += sorted_paths[0].current
+    currents[wire_num] += sorted_paths[npos-1].current
+
+    refl_index = (0 if wire_num <= 0 else npos-1)
+    currents[-wire_num] += sorted_paths[refl_index].current
+
+    for j in range(1, npos-1):
+      currents[wire_num] += sorted_paths[start+j].current
+      currents[-wire_num] += sorted_paths[start+j].current
+    wire_num += 1
+    start += npos
+
+  newpaths = []
+  for wire_num, current in sorted(currents.items()):
+    current /= navg 
+    newpaths.append(PathResponse(current, plane.pitch*wire_num, 0.0))
+
+
+  return PlaneResponse(newpaths, plane.planeid, plane.location, plane.pitch)
+
+def wire_region_average_allplanes(fr, navg=10):
+  newplanes = [wire_region_average_plane(fr, navg, i) for i in range(len(fr.planes))]
+  return FieldResponse(newplanes, fr.axis, fr.origin, fr.tstart, fr.period, fr.speed)
 
 def redigitize(x, avg_period, target_period, target_ticks):
   # redigitize ...
